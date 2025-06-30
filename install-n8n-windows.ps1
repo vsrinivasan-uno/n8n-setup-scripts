@@ -210,35 +210,28 @@ function Install-NodeJS {
 # Install n8n
 function Install-N8n {
     Write-Step "4/6" "Installing n8n"
-    
     try {
         if (Get-Command n8n -ErrorAction SilentlyContinue) {
-            Write-Warning "n8n is already installed. Upgrading..."
-            npm install -g n8n@latest | Out-Null
-        }
-        else {
+            $currentVersion = (n8n --version).Trim()
+            $latestVersion = (npm view n8n version).Trim()
+            if ($currentVersion -eq $latestVersion) {
+                Write-Success "n8n is already up to date (Version $currentVersion)."
+                return
+            }
+            else {
+                Write-Warning "n8n (v$currentVersion) is outdated. Upgrading to latest (v$latestVersion)..."
+                npm install -g n8n@latest | Out-Null
+            }
+        } else {
             Write-Info "Installing n8n globally via npm..."
             npm install -g n8n | Out-Null
         }
         
-        # Verify installation
         if (Get-Command n8n -ErrorAction SilentlyContinue) {
-            try {
-                $n8nVersion = n8n --version 2>$null
-                if (-not $n8nVersion) { $n8nVersion = "unknown" }
-                Write-Success "n8n $n8nVersion installed successfully"
-            }
-            catch {
-                Write-Success "n8n installed successfully"
-            }
-        }
-        else {
-            Handle-Error "n8n installation failed"
-        }
-    }
-    catch {
-        Handle-Error "Failed to install n8n: $($_.Exception.Message)"
-    }
+            $n8nVersion = (n8n --version 2>$null)
+            Write-Success "n8n $($n8nVersion) installed successfully."
+        } else { Handle-Error "n8n installation failed." }
+    } catch { Handle-Error "Failed to install n8n: $($_.Exception.Message)" }
 }
 
 # Configure n8n
@@ -347,8 +340,8 @@ function Start-Installation {
     # Setup
     Write-Host ""
     Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-    Write-Host "║              n8n Automated Installer for Windows             ║" -ForegroundColor Magenta
-    Write-Host "║                      Version $ScriptVersion                  ║" -ForegroundColor Magenta
+    Write-Host "║            n8n Automated Installer for Windows             ║" -ForegroundColor Magenta
+    Write-Host "║                       Version $ScriptVersion                       ║" -ForegroundColor Magenta
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "Built by Vishva Prasanth Srinivasan | AI-CCORE" -ForegroundColor "Gray"
