@@ -351,6 +351,9 @@ function Start-Installation {
     Write-Host "║                      Version $ScriptVersion                     ║" -ForegroundColor Magenta
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
     Write-Host ""
+    Write-Host "Built by Vishva Prasanth Srinivasan | AI-CCORE" -ForegroundColor "Gray"
+    Write-Host "LinkedIn: https://www.linkedin.com/in/vishvaprasanth/" -ForegroundColor "Gray"
+    Write-Host ""
     
     # Create log file
     "n8n Installation Log - $(Get-Date)" | Out-File -FilePath $LogFile -Encoding UTF8

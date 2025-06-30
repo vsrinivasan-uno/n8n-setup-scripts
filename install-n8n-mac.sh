@@ -318,16 +318,16 @@ cleanup() {
 
 # Main installation function
 main() {
-    # Setup
-    echo -e "${PURPLE}"
-    echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║                     n8n Automated Installer                 ║"
-    echo "║                        for macOS                            ║"
-    echo "║                      Version $SCRIPT_VERSION                        ║"
-    echo "╚══════════════════════════════════════════════════════════════╝"
-    echo -e "${NC}"
+    # Print intro
+    echo -e "${PURPLE}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${PURPLE}║              n8n Automated Installer for macOS             ║${NC}"
+    echo -e "${PURPLE}║                      Version $SCRIPT_VERSION                     ║${NC}"
+    echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    
+    echo -e "${CYAN}Built by Vishva Prasanth Srinivasan | AI-CCORE${NC}"
+    echo -e "${CYAN}LinkedIn: https://www.linkedin.com/in/vishvaprasanth/${NC}"
+    echo ""
+
     # Create log file
     echo "n8n Installation Log - $(date)" > "$LOG_FILE"
     print_info "Installation log: $LOG_FILE"

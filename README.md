@@ -246,6 +246,13 @@ For more detailed troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 ### Q: What if I don't want to install Homebrew/Chocolatey?
 **A:** These package managers are required for the automated installation. You can install n8n manually if you prefer.
 
+## ❤️ Credits and Author
+
+This project was built by **Vishva Prasanth Srinivasan** | AI-CCORE.
+
+- **LinkedIn:** [https://www.linkedin.com/in/vishvaprasanth/](https://www.linkedin.com/in/vishvaprasanth/)
+- **GitHub:** [https://github.com/vsrinivasan-uno](https://github.com/vsrinivasan-uno)
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
