@@ -372,28 +372,21 @@ function Start-Installation {
     Invoke-Cleanup
 }
 
-# Error handling
+# --- Execution Logic ---
+
 trap {
     Write-Error "Script interrupted: $($_.Exception.Message)"
-    Invoke-Cleanup
     exit 1
 }
 
-# Check if running as administrator
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 if (-not $isAdmin) {
-    Write-Warning "This script requires Administrator privileges. Please re-run from an elevated PowerShell terminal."
-    if (-not $NoInteraction) {
-        $continue = Read-Host "Attempt to continue anyway? (y/N)"
-        if ($continue -notmatch '^[Yy]$') {
-            Write-Info "To run as Administrator, right-click the PowerShell icon and select 'Run as Administrator'."
-            exit 0
-        }
-    } else {
-        exit 1
-    }
+    Write-Error "This script requires Administrator privileges."
+    Write-Info "Please re-run this script from a PowerShell terminal with 'Run as Administrator'."
+    # Pause for 5 seconds to allow user to read the message.
+    Start-Sleep -Seconds 5
+    exit 1
 }
 
-# Run main function
+# All checks passed, starting the installation.
 Start-Installation 
