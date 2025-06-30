@@ -201,17 +201,9 @@ install_nodejs() {
 install_n8n() {
     print_step "4/6" "Installing n8n..."
     
-    if command -v n8n &>/dev/null; then
-        current_version=$(n8n --version 2>/dev/null | sed 's/^v//;s/ //g')
-        latest_version=$(npm view n8n version 2>/dev/null | sed 's/^v//;s/ //g')
-        
-        if [ "$current_version" = "$latest_version" ]; then
-            print_success "n8n is already up to date (Version $current_version)."
-            return
-        else
-            print_warning "n8n v$current_version is outdated. Upgrading to v$latest_version..."
-            npm install -g n8n@latest || handle_error "Failed to upgrade n8n"
-        fi
+    if command -v n8n >/dev/null 2>&1; then
+        print_warning "n8n is already installed. Upgrading to latest version..."
+        npm install -g n8n@latest || handle_error "Failed to upgrade n8n"
     else
         print_info "Installing n8n globally..."
         npm install -g n8n || handle_error "Failed to install n8n"
@@ -328,8 +320,8 @@ cleanup() {
 main() {
     # Print intro
     echo -e "${PURPLE}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${PURPLE}║           n8n Automated Installer for macOS                ║${NC}"
-    echo -e "${PURPLE}║                    Version $SCRIPT_VERSION                       ║${NC}"
+    echo -e "${PURPLE}║              n8n Automated Installer for macOS               ║${NC}"
+    echo -e "${PURPLE}║                      Version $SCRIPT_VERSION                 ║${NC}"
     echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "${CYAN}Built by Vishva Prasanth Srinivasan | AI-CCORE${NC}"

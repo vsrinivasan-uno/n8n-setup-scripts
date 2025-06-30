@@ -16,25 +16,6 @@ param(
     [switch]$NoInteraction = $false
 )
 
-# Ensure execution policy allows running npm.ps1 and other scripts
-try {
-    $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
-    if ($currentPolicy -eq 'Restricted' -or $currentPolicy -eq 'AllSigned') {
-        Write-Warning "Execution policy is $currentPolicy. Attempting to set to RemoteSigned for this user..."
-        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-        $newPolicy = Get-ExecutionPolicy -Scope CurrentUser
-        if ($newPolicy -ne 'RemoteSigned') {
-            Write-Error "Failed to set execution policy. Please run PowerShell as Administrator and set the policy manually."
-            exit 1
-        } else {
-            Write-Success "Execution policy set to RemoteSigned."
-        }
-    }
-} catch {
-    Write-Error "Could not check or set execution policy: $($_.Exception.Message)"
-    exit 1
-}
-
 # Configuration
 $ScriptVersion = "1.0.1"
 $MinNodeVersion = 18
@@ -229,27 +210,35 @@ function Install-NodeJS {
 # Install n8n
 function Install-N8n {
     Write-Step "4/6" "Installing n8n"
+    
     try {
         if (Get-Command n8n -ErrorAction SilentlyContinue) {
-            $currentVersion = (n8n --version 2>$null) -replace '^v', '' -replace '\s', ''
-            $latestVersion = (npm view n8n version 2>$null) -replace '^v', '' -replace '\s', ''
-            if ($currentVersion -eq $latestVersion) {
-                Write-Success "n8n is already up to date (Version $currentVersion)."
-                return
-            }
-            else {
-                Write-Warning "n8n (v$currentVersion) is outdated. Upgrading to latest (v$latestVersion)..."
-                npm install -g n8n@latest | Out-Null
-            }
-        } else {
+            Write-Warning "n8n is already installed. Upgrading..."
+            npm install -g n8n@latest | Out-Null
+        }
+        else {
             Write-Info "Installing n8n globally via npm..."
             npm install -g n8n | Out-Null
         }
+        
+        # Verify installation
         if (Get-Command n8n -ErrorAction SilentlyContinue) {
-            $n8nVersion = (n8n --version 2>$null)
-            Write-Success "n8n $($n8nVersion) installed successfully."
-        } else { Handle-Error "n8n installation failed." }
-    } catch { Handle-Error "Failed to install n8n: $($_.Exception.Message)" }
+            try {
+                $n8nVersion = n8n --version 2>$null
+                if (-not $n8nVersion) { $n8nVersion = "unknown" }
+                Write-Success "n8n $n8nVersion installed successfully"
+            }
+            catch {
+                Write-Success "n8n installed successfully"
+            }
+        }
+        else {
+            Handle-Error "n8n installation failed"
+        }
+    }
+    catch {
+        Handle-Error "Failed to install n8n: $($_.Exception.Message)"
+    }
 }
 
 # Configure n8n
@@ -358,8 +347,8 @@ function Start-Installation {
     # Setup
     Write-Host ""
     Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-    Write-Host "║            n8n Automated Installer for Windows             ║" -ForegroundColor Magenta
-    Write-Host "║                       Version $ScriptVersion                       ║" -ForegroundColor Magenta
+    Write-Host "║              n8n Automated Installer for Windows             ║" -ForegroundColor Magenta
+    Write-Host "║                      Version $ScriptVersion                  ║" -ForegroundColor Magenta
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "Built by Vishva Prasanth Srinivasan | AI-CCORE" -ForegroundColor "Gray"
