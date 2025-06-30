@@ -423,7 +423,6 @@ function Start-Installation {
     Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
     Write-Host "║                     n8n Automated Installer                  ║" -ForegroundColor Magenta
     Write-Host "║                       for Windows                            ║" -ForegroundColor Magenta
-    Write-Host "║                      Version $ScriptVersion                  ║" -ForegroundColor Magenta
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
     Write-Host ""
     
