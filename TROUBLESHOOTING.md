@@ -647,7 +647,7 @@ $env:PATH -split ';'
 ### Community Resources
 
 - **n8n Community Forum**: https://community.n8n.io
-- **GitHub Issues**: https://github.com/YOUR-USERNAME/n8n-setup-scripts/issues
+- **GitHub Issues**: https://github.com/vsrinivasan-uno/n8n-setup-scripts/issues
 - **Discord**: https://discord.gg/n8n
 - **Documentation**: https://docs.n8n.io
 

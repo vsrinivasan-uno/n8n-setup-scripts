@@ -27,7 +27,7 @@ REQUIRED_RAM_GB=4
 
 # GitHub repository information
 GITHUB_REPO="n8n-setup-scripts"
-GITHUB_USER="vsrinivasan-uno"  # Replace with actual username
+GITHUB_USER="vsrinivasan-uno"
 UPDATE_CHECK_URL="https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/releases/latest"
 
 # Logging function

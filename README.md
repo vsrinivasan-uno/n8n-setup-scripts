@@ -116,7 +116,7 @@ Stop-Process -Name node
 
 ### macOS
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/n8n-setup-scripts/main/uninstall-n8n-mac.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/uninstall-n8n-mac.sh | bash
 ```
 
 ### Windows
@@ -255,9 +255,9 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ### Issues and Feature Requests
 
-- **Bug Reports**: [Create an issue](https://github.com/YOUR-USERNAME/n8n-setup-scripts/issues)
-- **Feature Requests**: [Create an issue](https://github.com/YOUR-USERNAME/n8n-setup-scripts/issues)
-- **Questions**: [Start a discussion](https://github.com/YOUR-USERNAME/n8n-setup-scripts/discussions)
+- **Bug Reports**: [Create an issue](https://github.com/vsrinivasan-uno/n8n-setup-scripts/issues)
+- **Feature Requests**: [Create an issue](https://github.com/vsrinivasan-uno/n8n-setup-scripts/issues)
+- **Questions**: [Start a discussion](https://github.com/vsrinivasan-uno/n8n-setup-scripts/discussions)
 
 ## 📚 Resources
 

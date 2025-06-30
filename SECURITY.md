@@ -20,7 +20,7 @@ We currently provide security updates for the following versions:
 If you discover a security vulnerability in our scripts, please help us by reporting it responsibly:
 
 **Do:**
-- Email security reports to: `security@yourproject.com` (replace with actual email)
+- Email security reports to: `vsrinivasan-uno@users.noreply.github.com` or create a private GitHub issue
 - Include detailed information about the vulnerability
 - Provide steps to reproduce the issue
 - Allow time for us to investigate and respond
@@ -176,15 +176,15 @@ When contributing to the project, ensure:
 
 ### Security Team
 
-- **Email**: security@yourproject.com (replace with actual contact)
+- **Email**: vsrinivasan-uno@users.noreply.github.com
 - **GPG Key**: [Link to public GPG key if available]
 - **Response Time**: 48 hours for acknowledgment
 
 ### General Security Questions
 
 For general security questions or concerns:
-- Open a [GitHub Discussion](https://github.com/YOUR-USERNAME/n8n-setup-scripts/discussions)
-- Email: security@yourproject.com
+- Open a [GitHub Discussion](https://github.com/vsrinivasan-uno/n8n-setup-scripts/discussions)
+- Email: vsrinivasan-uno@users.noreply.github.com
 - Tag security-related issues with the `security` label
 
 ## 📚 Additional Resources
@@ -198,4 +198,4 @@ For general security questions or concerns:
 
 **Remember**: Security is a shared responsibility. While we work hard to make our scripts secure, users should always practice good security hygiene and follow their organization's security policies.
 
-For questions about this security policy, please contact us at security@yourproject.com. 
+For questions about this security policy, please contact us at vsrinivasan-uno@users.noreply.github.com or open a GitHub discussion. 

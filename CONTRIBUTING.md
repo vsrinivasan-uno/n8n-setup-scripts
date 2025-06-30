@@ -71,7 +71,7 @@ We welcome various types of contributions:
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/n8n-setup-scripts.git
+   git clone https://github.com/vsrinivasan-uno/n8n-setup-scripts.git
    cd n8n-setup-scripts
    ```
 3. **Create a branch** for your changes:
@@ -369,9 +369,9 @@ Looking for ways to contribute? Check issues labeled:
 
 ## 🤔 Questions?
 
-- **General Questions**: [GitHub Discussions](https://github.com/YOUR-USERNAME/n8n-setup-scripts/discussions)
-- **Bug Reports**: [GitHub Issues](https://github.com/YOUR-USERNAME/n8n-setup-scripts/issues)
-- **Security Issues**: Email [security@yourproject.com]
+- **General Questions**: [GitHub Discussions](https://github.com/vsrinivasan-uno/n8n-setup-scripts/discussions)
+- **Bug Reports**: [GitHub Issues](https://github.com/vsrinivasan-uno/n8n-setup-scripts/issues)
+- **Security Issues**: Email [vsrinivasan-uno@users.noreply.github.com]
 - **Chat**: [Discord Channel] (if available)
 
 ## 🙏 Recognition
