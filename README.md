@@ -18,7 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/m
 
 ### Windows (PowerShell as Administrator)
 ```powershell
-iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/install-n8n-windows.ps1'))
+irm https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/install-n8n-windows.ps1 | iex
 ```
 
 ## 📋 What Gets Installed
@@ -121,7 +121,7 @@ curl -fsSL https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/m
 
 ### Windows
 ```powershell
-iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/uninstall-n8n-windows.ps1'))
+irm https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/uninstall-n8n-windows.ps1 | iex
 ```
 
 The uninstaller will:
@@ -142,17 +142,14 @@ curl -fsSL https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/m
 
 **Windows:**
 ```powershell
-$env:N8N_PORT = "3000"
-iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/install-n8n-windows.ps1'))
+$env:N8N_PORT = "3000"; irm https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/install-n8n-windows.ps1 | iex
 ```
 
 ### Silent Installation (Windows)
 
 ```powershell
 # Download and run with no user interaction
-$script = (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/install-n8n-windows.ps1')
-$script = $script -replace 'Start-Installation', 'Start-Installation -NoInteraction $true'
-Invoke-Expression $script
+irm https://raw.githubusercontent.com/vsrinivasan-uno/n8n-setup-scripts/main/install-n8n-windows.ps1 | iex -c "Start-Installation -NoInteraction"
 ```
 
 ### Keep Data During Uninstall
