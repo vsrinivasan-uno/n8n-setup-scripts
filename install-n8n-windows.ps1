@@ -452,9 +452,9 @@ function Start-Installation {
     # Setup
     Write-Host ""
     Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-    Write-Host "║                     n8n Automated Installer                 ║" -ForegroundColor Magenta
-    Write-Host "║                       for Windows                           ║" -ForegroundColor Magenta
-    Write-Host "║                      Version $ScriptVersion                        ║" -ForegroundColor Magenta
+    Write-Host "║                     n8n Automated Installer                  ║" -ForegroundColor Magenta
+    Write-Host "║                       for Windows                            ║" -ForegroundColor Magenta
+    Write-Host "║                      Version $ScriptVersion                  ║" -ForegroundColor Magenta
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
     Write-Host ""
     
@@ -500,4 +500,4 @@ if (-not $isAdmin) {
 }
 
 # Run main function
-Start-Installation 
+Start-Installation
