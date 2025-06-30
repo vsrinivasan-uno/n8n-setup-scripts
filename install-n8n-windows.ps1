@@ -17,7 +17,7 @@ param(
 )
 
 # Configuration
-$ScriptVersion = "1.0.0"
+$ScriptVersion = "1.0.1"
 $MinNodeVersion = 18
 $RequiredDiskSpaceGB = 2
 $RequiredRAMGB = 4
@@ -91,8 +91,7 @@ function Test-ScriptUpdates {
         $latestVersion = (Invoke-RestMethod -Uri $uri -ErrorAction SilentlyContinue).tag_name
         
         if ($latestVersion -and $latestVersion -ne $ScriptVersion) {
-            Write-Warning "A newer version ($latestVersion) is available!"
-            Write-Info "Visit: https://github.com/$GitHubUser/$GitHubRepo"
+            Write-Warning "A newer version ($latestVersion) is available at https://github.com/$GitHubUser/$GitHubRepo"
             if (-not $NoInteraction) {
                 $continue = Read-Host "Continue with current version? (y/N)"
                 if ($continue -notmatch '^[Yy]$') {
@@ -102,26 +101,24 @@ function Test-ScriptUpdates {
         }
     }
     catch {
-        Write-Info "Could not check for updates"
+        Write-Info "Could not check for updates."
     }
 }
 
 # System requirements check
 function Test-SystemRequirements {
-    Write-Step "1/6" "Checking system requirements..."
+    Write-Step "1/6" "Checking system requirements"
     
     # Check Windows version
     $osVersion = [System.Environment]::OSVersion.Version
-    $isWindows10Plus = ($osVersion.Major -eq 10) -or ($osVersion.Major -gt 10)
-    
-    if (-not $isWindows10Plus) {
-        Handle-Error "Windows 10 or later is required. Current version: $($osVersion.ToString())"
+    if ($osVersion.Major -lt 10) {
+        Handle-Error "Windows 10 or later is required."
     }
     
     # Check PowerShell version
     $psVersion = $PSVersionTable.PSVersion
     if ($psVersion.Major -lt 5) {
-        Handle-Error "PowerShell 5.1 or later is required. Current version: $($psVersion.ToString())"
+        Handle-Error "PowerShell 5.1 or later is required."
     }
     
     # Check disk space
@@ -130,62 +127,38 @@ function Test-SystemRequirements {
     $availableSpaceGB = [math]::Round($disk.FreeSpace / 1GB, 2)
     
     if ($availableSpaceGB -lt $RequiredDiskSpaceGB) {
-        Handle-Error "Insufficient disk space. Required: ${RequiredDiskSpaceGB}GB, Available: ${availableSpaceGB}GB"
+        Handle-Error "Insufficient disk space."
     }
     
     # Check RAM
     $totalRamGB = [math]::Round((Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
     if ($totalRamGB -lt $RequiredRAMGB) {
-        Handle-Error "Insufficient RAM. Required: ${RequiredRAMGB}GB, Available: ${totalRamGB}GB"
+        Handle-Error "Insufficient RAM."
     }
     
     # Check internet connectivity
-    try {
-        $testConnection = Test-NetConnection -ComputerName "google.com" -Port 80 -InformationLevel Quiet -ErrorAction SilentlyContinue
-        if (-not $testConnection) {
-            Handle-Error "Internet connection required for installation"
-        }
-    }
-    catch {
-        Write-Warning "Could not verify internet connection"
+    if (-not (Test-NetConnection -ComputerName "google.com" -Port 80 -InformationLevel Quiet -ErrorAction SilentlyContinue)) {
+        Write-Warning "Could not verify internet connection."
     }
     
-    Write-Success "System requirements check passed"
-    Write-Info "OS: Windows $($osVersion.ToString())"
-    Write-Info "PowerShell: $($psVersion.ToString())"
-    Write-Info "Available space: ${availableSpaceGB}GB"
-    Write-Info "RAM: ${totalRamGB}GB"
+    Write-Success "System requirements check passed."
 }
 
 # Install Chocolatey
 function Install-Chocolatey {
-    Write-Step "2/6" "Installing Chocolatey package manager..."
+    Write-Step "2/6" "Checking Chocolatey package manager"
     
     if (Get-Command choco -ErrorAction SilentlyContinue) {
-        Write-Success "Chocolatey is already installed"
-        
-        # Update chocolatey
-        Write-Info "Updating Chocolatey..."
-        try {
-            choco upgrade chocolatey -y | Out-Null
-            Write-Success "Chocolatey updated successfully"
-        }
-        catch {
-            Write-Warning "Could not update Chocolatey, but continuing..."
-        }
+        Write-Success "Chocolatey is already installed."
     }
     else {
         Write-Info "Installing Chocolatey..."
         try {
             Set-ExecutionPolicy Bypass -Scope Process -Force
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            $installScript = Invoke-WebRequest -Uri https://community.chocolatey.org/install.ps1 -UseBasicParsing
-            Invoke-Expression $installScript.Content
-            
-            # Refresh environment variables
-            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-            
-            Write-Success "Chocolatey installed successfully"
+            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+            Write-Success "Chocolatey installed successfully."
         }
         catch {
             Handle-Error "Failed to install Chocolatey: $($_.Exception.Message)"
@@ -195,7 +168,7 @@ function Install-Chocolatey {
 
 # Install Node.js
 function Install-NodeJS {
-    Write-Step "3/6" "Installing Node.js..."
+    Write-Step "3/6" "Checking Node.js"
     
     # Check if Node.js is already installed
     if (Get-Command node -ErrorAction SilentlyContinue) {
@@ -203,20 +176,20 @@ function Install-NodeJS {
         $currentMajor = [int]($currentVersion.Split('.')[0])
         
         if ($currentMajor -ge $MinNodeVersion) {
-            Write-Success "Node.js v$currentVersion is already installed"
+            Write-Success "Node.js v$currentVersion is already installed."
             return
         }
         else {
-            Write-Warning "Node.js version v$currentVersion is too old. Installing newer version..."
+            Write-Warning "Node.js version v$currentVersion is too old. Upgrading..."
         }
     }
     
     Write-Info "Installing Node.js LTS via Chocolatey..."
     try {
-        choco install nodejs-lts -y | Out-Null
+        choco install nodejs-lts -y --force | Out-Null
         
         # Refresh environment variables
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
         
         # Verify installation
         if (Get-Command node -ErrorAction SilentlyContinue) {
@@ -226,7 +199,7 @@ function Install-NodeJS {
             Write-Success "npm v$npmVersion available"
         }
         else {
-            Handle-Error "Node.js installation verification failed"
+            Handle-Error "Node.js installation failed."
         }
     }
     catch {
@@ -236,15 +209,15 @@ function Install-NodeJS {
 
 # Install n8n
 function Install-N8n {
-    Write-Step "4/6" "Installing n8n..."
+    Write-Step "4/6" "Installing n8n"
     
     try {
         if (Get-Command n8n -ErrorAction SilentlyContinue) {
-            Write-Warning "n8n is already installed. Upgrading to latest version..."
+            Write-Warning "n8n is already installed. Upgrading..."
             npm install -g n8n@latest | Out-Null
         }
         else {
-            Write-Info "Installing n8n globally..."
+            Write-Info "Installing n8n globally via npm..."
             npm install -g n8n | Out-Null
         }
         
@@ -260,7 +233,7 @@ function Install-N8n {
             }
         }
         else {
-            Handle-Error "n8n installation verification failed"
+            Handle-Error "n8n installation failed"
         }
     }
     catch {
@@ -270,7 +243,7 @@ function Install-N8n {
 
 # Configure n8n
 function Set-N8nConfiguration {
-    Write-Step "5/6" "Configuring n8n..."
+    Write-Step "5/6" "Configuring n8n"
     
     # Create n8n directory
     if (-not (Test-Path $N8nUserFolder)) {
@@ -330,82 +303,35 @@ function Set-FirewallRules {
 
 # Start n8n server
 function Start-N8nServer {
-    Write-Step "6/6" "Starting n8n server..."
+    Write-Step "6/6" "Starting n8n server"
     
     # Configure firewall
     Set-FirewallRules
     
-    Write-Info "Starting n8n on port $Port..."
-    Write-Info "This may take a moment for the first startup..."
-    
-    # Start n8n in background
+    Write-Info "Starting n8n on http://localhost:$Port. This may take a moment..."
     $logPath = Join-Path $N8nUserFolder "n8n.log"
-    $job = Start-Job -ScriptBlock {
-        param($UserFolder, $Port, $LogPath)
-        $env:N8N_USER_FOLDER = $UserFolder
-        $env:N8N_PORT = $Port
-        n8n start 2>&1 | Tee-Object -FilePath $LogPath
-    } -ArgumentList $N8nUserFolder, $Port, $logPath
-    
-    # Wait for n8n to start
-    Write-Info "Waiting for n8n to start..."
-    $maxAttempts = 30
-    $attempt = 0
-    
+    Start-Job -ScriptBlock { 
+        param($UserFolder, $Port)
+        $env:N8N_USER_FOLDER = $UserFolder; $env:N8N_PORT = $Port
+        n8n start 2>&1 | Tee-Object -FilePath $using:logPath -Append
+    } -ArgumentList $N8nUserFolder, $Port
+
+    $maxAttempts = 30; $attempt = 0
     do {
-        Start-Sleep -Seconds 2
-        $attempt++
-        Write-Host "." -NoNewline
-        
+        Start-Sleep -Seconds 2; $attempt++; Write-Host "." -NoNewline
         try {
-            $response = Invoke-WebRequest -Uri "http://localhost:$Port" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue
-            if ($response.StatusCode -eq 200) {
-                break
-            }
-        }
-        catch {
-            # Continue waiting
-        }
+            if ((Invoke-WebRequest -Uri "http://localhost:$Port" -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200) { break }
+        } catch { }
     } while ($attempt -lt $maxAttempts)
-    
     Write-Host ""
-    
-    # Check if n8n is running
-    try {
-        $response = Invoke-WebRequest -Uri "http://localhost:$Port" -UseBasicParsing -TimeoutSec 10 -ErrorAction SilentlyContinue
-        if ($response.StatusCode -eq 200) {
-            Write-Success "n8n server started successfully!"
-            Write-Success "Access n8n at: http://localhost:$Port"
-            
-            # Open browser
-            Write-Info "Opening n8n in your default browser..."
-            Start-Process "http://localhost:$Port"
-            
-            # Display final instructions
-            Write-Host ""
-            Write-Host "🎉 Installation Complete! 🎉" -ForegroundColor Green
-            Write-Host ""
-            Write-Host "n8n is now running on your system!" -ForegroundColor Cyan
-            Write-Host ""
-            Write-Host "Quick Start:" -ForegroundColor Yellow
-            Write-Host "• Access n8n: http://localhost:$Port"
-            Write-Host "• Start n8n: $env:USERPROFILE\start-n8n.bat"
-            Write-Host "• Start n8n (PowerShell): $env:USERPROFILE\start-n8n.ps1"
-            Write-Host "• Stop n8n: Stop-Process -Name node"
-            Write-Host "• Logs: $logPath"
-            Write-Host "• Installation log: $LogFile"
-            Write-Host ""
-            Write-Host "Need help?" -ForegroundColor Magenta
-            Write-Host "• Documentation: https://docs.n8n.io"
-            Write-Host "• Troubleshooting: https://github.com/$GitHubUser/$GitHubRepo/blob/main/TROUBLESHOOTING.md"
-            Write-Host "• Issues: https://github.com/$GitHubUser/$GitHubRepo/issues"
-            Write-Host ""
-        }
-        else {
-            Handle-Error "n8n failed to start. Check logs at: $logPath"
-        }
-    }
-    catch {
+
+    if ($attempt -lt $maxAttempts) {
+        Write-Success "n8n server started successfully!"
+        Write-Info "Opening n8n in your default browser..."
+        Start-Process "http://localhost:$Port"
+        Write-Host "`n🎉 Installation Complete! 🎉`n" -ForegroundColor Green
+        Write-Host "Access n8n at: http://localhost:$Port" -ForegroundColor Cyan
+    } else {
         Handle-Error "n8n failed to start. Check logs at: $logPath"
     }
 }
@@ -421,15 +347,14 @@ function Start-Installation {
     # Setup
     Write-Host ""
     Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-    Write-Host "║                     n8n Automated Installer                  ║" -ForegroundColor Magenta
-    Write-Host "║                       for Windows                            ║" -ForegroundColor Magenta
-    Write-Host "║                      Version $ScriptVersion                  ║" -ForegroundColor Magenta
+    Write-Host "║              n8n Automated Installer for Windows             ║" -ForegroundColor Magenta
+    Write-Host "║                      Version $ScriptVersion                     ║" -ForegroundColor Magenta
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
     Write-Host ""
     
     # Create log file
     "n8n Installation Log - $(Get-Date)" | Out-File -FilePath $LogFile -Encoding UTF8
-    Write-Info "Installation log: $LogFile"
+    Write-Info "Installation log will be saved to $LogFile"
     Write-Host ""
     
     # Check for updates
@@ -449,7 +374,7 @@ function Start-Installation {
 
 # Error handling
 trap {
-    Write-Error "Installation interrupted: $($_.Exception.Message)"
+    Write-Error "Script interrupted: $($_.Exception.Message)"
     Invoke-Cleanup
     exit 1
 }
@@ -458,13 +383,15 @@ trap {
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 
 if (-not $isAdmin) {
-    Write-Warning "This script should be run as Administrator for best results."
+    Write-Warning "This script requires Administrator privileges. Please re-run from an elevated PowerShell terminal."
     if (-not $NoInteraction) {
-        $continue = Read-Host "Continue anyway? (y/N)"
+        $continue = Read-Host "Attempt to continue anyway? (y/N)"
         if ($continue -notmatch '^[Yy]$') {
-            Write-Info "To run as Administrator, right-click PowerShell and select 'Run as Administrator'"
+            Write-Info "To run as Administrator, right-click the PowerShell icon and select 'Run as Administrator'."
             exit 0
         }
+    } else {
+        exit 1
     }
 }
 
