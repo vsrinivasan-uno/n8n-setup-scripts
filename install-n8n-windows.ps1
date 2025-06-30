@@ -1,38 +1,38 @@
-# n8n Automated Installation Script for Windows
-# Version: 1.0.0
-# Author: n8n Setup Scripts
-# License: MIT
-# Requires: PowerShell 5.1 or later
-
 #Requires -Version 5.1
 
+<#
+.SYNOPSIS
+    Automated n8n Installation Script for Windows
+.DESCRIPTION
+    One-command installation script for n8n workflow automation platform on Windows systems
+.PARAMETER Port
+    Port number for n8n server (default: 5678)
+.PARAMETER NoInteraction
+    Run script without user prompts
+#>
+
 param(
-    [switch]$SkipUpdates,
-    [switch]$NoInteraction,
-    [string]$Port = "5678"
+    [int]$Port = 5678,
+    [switch]$NoInteraction = $false
 )
 
-# Script configuration
+# Configuration
 $ScriptVersion = "1.0.0"
-$LogFile = "$env:USERPROFILE\n8n-install.log"
-$N8nUserFolder = "$env:USERPROFILE\.n8n"
 $MinNodeVersion = 18
 $RequiredDiskSpaceGB = 2
 $RequiredRAMGB = 4
-
-# GitHub repository information
-$GitHubRepo = "n8n-setup-scripts"
 $GitHubUser = "vsrinivasan-uno"
-$UpdateCheckUrl = "https://api.github.com/repos/$GitHubUser/$GitHubRepo/releases/latest"
+$GitHubRepo = "n8n-setup-scripts"
+$N8nUserFolder = "$env:USERPROFILE\.n8n"
+$LogFile = "$env:TEMP\n8n-installation.log"
 
 # Color configuration
 $Colors = @{
     Red = "Red"
     Green = "Green"
     Yellow = "Yellow"
-    Blue = "Blue"
-    Purple = "Magenta"
     Cyan = "Cyan"
+    Magenta = "Magenta"
     White = "White"
 }
 
@@ -41,13 +41,12 @@ function Write-Log {
     param([string]$Message)
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     "$timestamp - $Message" | Out-File -FilePath $LogFile -Append -Encoding UTF8
-    Write-Host $Message
 }
 
 # Print functions with colors
 function Write-Step {
     param([string]$Step, [string]$Message)
-    Write-Host "[$Step] $Message" -ForegroundColor $Colors.Blue
+    Write-Host "[$Step] $Message" -ForegroundColor $Colors.Cyan
     Write-Log "[$Step] $Message"
 }
 
@@ -71,33 +70,29 @@ function Write-Error {
 
 function Write-Info {
     param([string]$Message)
-    Write-Host "ℹ $Message" -ForegroundColor $Colors.Cyan
+    Write-Host "ℹ $Message" -ForegroundColor $Colors.White
     Write-Log "INFO: $Message"
 }
 
-# Error handling
+# Error handling function
 function Handle-Error {
-    param([string]$Step)
-    Write-Error "Installation failed at step: $Step"
-    Write-Error "Check the log file at: $LogFile"
-    Write-Info "For troubleshooting help, visit: https://github.com/$GitHubUser/$GitHubRepo/blob/main/TROUBLESHOOTING.md"
+    param([string]$Message)
+    Write-Error $Message
+    Write-Host "Installation failed. Check log at: $LogFile" -ForegroundColor $Colors.Red
     exit 1
 }
 
 # Check for script updates
 function Test-ScriptUpdates {
-    if ($SkipUpdates) { return }
-    
     Write-Info "Checking for script updates..."
     
     try {
-        $response = Invoke-RestMethod -Uri $UpdateCheckUrl -ErrorAction SilentlyContinue
-        $latestVersion = $response.tag_name -replace '^v', ''
+        $uri = "https://api.github.com/repos/$GitHubUser/$GitHubRepo/releases/latest"
+        $latestVersion = (Invoke-RestMethod -Uri $uri -ErrorAction SilentlyContinue).tag_name
         
         if ($latestVersion -and $latestVersion -ne $ScriptVersion) {
-            Write-Warning "A newer version ($latestVersion) of this script is available!"
-            Write-Info "Download the latest version from: https://github.com/$GitHubUser/$GitHubRepo"
-            
+            Write-Warning "A newer version ($latestVersion) is available!"
+            Write-Info "Visit: https://github.com/$GitHubUser/$GitHubRepo"
             if (-not $NoInteraction) {
                 $continue = Read-Host "Continue with current version? (y/N)"
                 if ($continue -notmatch '^[Yy]$') {
@@ -107,7 +102,7 @@ function Test-ScriptUpdates {
         }
     }
     catch {
-        Write-Warning "Could not check for updates: $($_.Exception.Message)"
+        Write-Info "Could not check for updates"
     }
 }
 
@@ -117,84 +112,75 @@ function Test-SystemRequirements {
     
     # Check Windows version
     $osVersion = [System.Environment]::OSVersion.Version
-    $isWindows10Plus = ($osVersion.Major -ge 10)
+    $isWindows10Plus = ($osVersion.Major -eq 10) -or ($osVersion.Major -gt 10)
     
     if (-not $isWindows10Plus) {
-        Handle-Error "Windows 10 or later is required. Found: $($osVersion.ToString())"
+        Handle-Error "Windows 10 or later is required. Current version: $($osVersion.ToString())"
     }
-    Write-Success "Windows version: $($osVersion.ToString())"
     
     # Check PowerShell version
     $psVersion = $PSVersionTable.PSVersion
     if ($psVersion.Major -lt 5) {
-        Handle-Error "PowerShell 5.1 or later is required. Found: $($psVersion.ToString())"
+        Handle-Error "PowerShell 5.1 or later is required. Current version: $($psVersion.ToString())"
     }
-    Write-Success "PowerShell version: $($psVersion.ToString())"
     
-    # Check available disk space
-    $drive = Get-WmiObject -Class Win32_LogicalDisk -Filter "DeviceID='C:'"
-    $availableSpaceGB = [math]::Round($drive.FreeSpace / 1GB, 2)
+    # Check disk space
+    $systemDrive = $env:SystemDrive
+    $disk = Get-WmiObject -Class Win32_LogicalDisk -Filter "DeviceID='$systemDrive'"
+    $availableSpaceGB = [math]::Round($disk.FreeSpace / 1GB, 2)
     
     if ($availableSpaceGB -lt $RequiredDiskSpaceGB) {
         Handle-Error "Insufficient disk space. Required: ${RequiredDiskSpaceGB}GB, Available: ${availableSpaceGB}GB"
     }
-    Write-Success "Available disk space: ${availableSpaceGB}GB"
     
-    # Check available RAM
+    # Check RAM
     $totalRamGB = [math]::Round((Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
     if ($totalRamGB -lt $RequiredRAMGB) {
-        Write-Warning "Low RAM detected. Recommended: ${RequiredRAMGB}GB, Available: ${totalRamGB}GB"
-    } else {
-        Write-Success "Available RAM: ${totalRamGB}GB"
+        Handle-Error "Insufficient RAM. Required: ${RequiredRAMGB}GB, Available: ${totalRamGB}GB"
     }
     
     # Check internet connectivity
     try {
-        $response = Test-Connection -ComputerName "8.8.8.8" -Count 1 -Quiet
-        if (-not $response) {
-            Handle-Error "No internet connection detected"
+        $testConnection = Test-NetConnection -ComputerName "google.com" -Port 80 -InformationLevel Quiet -ErrorAction SilentlyContinue
+        if (-not $testConnection) {
+            Handle-Error "Internet connection required for installation"
         }
-        Write-Success "Internet connectivity verified"
     }
     catch {
-        Handle-Error "No internet connection detected"
+        Write-Warning "Could not verify internet connection"
     }
     
-    # Check execution policy
-    $executionPolicy = Get-ExecutionPolicy
-    if ($executionPolicy -eq "Restricted") {
-        Write-Warning "PowerShell execution policy is Restricted. Attempting to set to RemoteSigned..."
-        try {
-            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-            Write-Success "Execution policy updated to RemoteSigned"
-        }
-        catch {
-            Handle-Error "Failed to update execution policy. Please run: Set-ExecutionPolicy RemoteSigned -Scope CurrentUser"
-        }
-    }
+    Write-Success "System requirements check passed"
+    Write-Info "OS: Windows $($osVersion.ToString())"
+    Write-Info "PowerShell: $($psVersion.ToString())"
+    Write-Info "Available space: ${availableSpaceGB}GB"
+    Write-Info "RAM: ${totalRamGB}GB"
 }
 
 # Install Chocolatey
 function Install-Chocolatey {
-    Write-Step "2/6" "Setting up Chocolatey package manager..."
+    Write-Step "2/6" "Installing Chocolatey package manager..."
     
     if (Get-Command choco -ErrorAction SilentlyContinue) {
         Write-Success "Chocolatey is already installed"
+        
+        # Update chocolatey
         Write-Info "Updating Chocolatey..."
         try {
             choco upgrade chocolatey -y | Out-Null
+            Write-Success "Chocolatey updated successfully"
         }
         catch {
-            Write-Warning "Failed to update Chocolatey, continuing..."
+            Write-Warning "Could not update Chocolatey, but continuing..."
         }
     }
     else {
         Write-Info "Installing Chocolatey..."
         try {
-            # Download and install Chocolatey
             Set-ExecutionPolicy Bypass -Scope Process -Force
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+            $installScript = Invoke-WebRequest -Uri https://community.chocolatey.org/install.ps1 -UseBasicParsing
+            Invoke-Expression $installScript.Content
             
             # Refresh environment variables
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
@@ -299,38 +285,21 @@ function Set-N8nConfiguration {
     $env:N8N_PORT = $Port
     
     # Create basic configuration
-    $configContent = @"
-# n8n Configuration
-N8N_USER_FOLDER=$N8nUserFolder
-N8N_PORT=$Port
-N8N_PROTOCOL=http
-N8N_HOST=localhost
-"@
+    $configContent = "# n8n Configuration`nN8N_USER_FOLDER=$N8nUserFolder`nN8N_PORT=$Port`nN8N_PROTOCOL=http`nN8N_HOST=localhost"
     
     $configPath = Join-Path $N8nUserFolder "config"
     $configContent | Out-File -FilePath $configPath -Encoding UTF8
     Write-Success "n8n configuration completed"
     
     # Create startup script
-    $startupScript = @"
-@echo off
-echo Starting n8n...
-n8n start
-pause
-"@
+    $startupScript = "@echo off`necho Starting n8n...`nn8n start`npause"
     
     $startupPath = "$env:USERPROFILE\start-n8n.bat"
     $startupScript | Out-File -FilePath $startupPath -Encoding ASCII
     Write-Success "Created startup script: $startupPath"
     
     # Create PowerShell startup script
-    $psStartupScript = @"
-# n8n Startup Script
-Write-Host "Starting n8n..." -ForegroundColor Green
-`$env:N8N_USER_FOLDER = "$N8nUserFolder"
-`$env:N8N_PORT = "$Port"
-n8n start
-"@
+    $psStartupScript = "# n8n Startup Script`nWrite-Host `"Starting n8n...`" -ForegroundColor Green`n`$env:N8N_USER_FOLDER = `"$N8nUserFolder`"`n`$env:N8N_PORT = `"$Port`"`nn8n start"
     
     $psStartupPath = "$env:USERPROFILE\start-n8n.ps1"
     $psStartupScript | Out-File -FilePath $psStartupPath -Encoding UTF8
@@ -500,4 +469,4 @@ if (-not $isAdmin) {
 }
 
 # Run main function
-Start-Installation
+Start-Installation 
