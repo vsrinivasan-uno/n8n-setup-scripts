@@ -320,8 +320,8 @@ cleanup() {
 main() {
     # Print intro
     echo -e "${PURPLE}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${PURPLE}║              n8n Automated Installer for macOS             ║${NC}"
-    echo -e "${PURPLE}║                      Version $SCRIPT_VERSION                     ║${NC}"
+    echo -e "${PURPLE}║              n8n Automated Installer for macOS               ║${NC}"
+    echo -e "${PURPLE}║                      Version $SCRIPT_VERSION                 ║${NC}"
     echo -e "${PURPLE}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "${CYAN}Built by Vishva Prasanth Srinivasan | AI-CCORE${NC}"

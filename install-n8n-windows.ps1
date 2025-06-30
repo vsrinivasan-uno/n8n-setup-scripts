@@ -348,7 +348,7 @@ function Start-Installation {
     Write-Host ""
     Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
     Write-Host "║              n8n Automated Installer for Windows             ║" -ForegroundColor Magenta
-    Write-Host "║                      Version $ScriptVersion                     ║" -ForegroundColor Magenta
+    Write-Host "║                      Version $ScriptVersion                  ║" -ForegroundColor Magenta
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "Built by Vishva Prasanth Srinivasan | AI-CCORE" -ForegroundColor "Gray"
