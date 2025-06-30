@@ -16,6 +16,25 @@ param(
     [switch]$NoInteraction = $false
 )
 
+# Ensure execution policy allows running npm.ps1 and other scripts
+try {
+    $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
+    if ($currentPolicy -eq 'Restricted' -or $currentPolicy -eq 'AllSigned') {
+        Write-Warning "Execution policy is $currentPolicy. Attempting to set to RemoteSigned for this user..."
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        $newPolicy = Get-ExecutionPolicy -Scope CurrentUser
+        if ($newPolicy -ne 'RemoteSigned') {
+            Write-Error "Failed to set execution policy. Please run PowerShell as Administrator and set the policy manually."
+            exit 1
+        } else {
+            Write-Success "Execution policy set to RemoteSigned."
+        }
+    }
+} catch {
+    Write-Error "Could not check or set execution policy: $($_.Exception.Message)"
+    exit 1
+}
+
 # Configuration
 $ScriptVersion = "1.0.1"
 $MinNodeVersion = 18
