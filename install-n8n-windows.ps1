@@ -212,8 +212,8 @@ function Install-N8n {
     Write-Step "4/6" "Installing n8n"
     try {
         if (Get-Command n8n -ErrorAction SilentlyContinue) {
-            $currentVersion = (n8n --version).Trim()
-            $latestVersion = (npm view n8n version).Trim()
+            $currentVersion = (n8n --version 2>$null) -replace '^v', '' -replace '\s', ''
+            $latestVersion = (npm view n8n version 2>$null) -replace '^v', '' -replace '\s', ''
             if ($currentVersion -eq $latestVersion) {
                 Write-Success "n8n is already up to date (Version $currentVersion)."
                 return
@@ -226,7 +226,6 @@ function Install-N8n {
             Write-Info "Installing n8n globally via npm..."
             npm install -g n8n | Out-Null
         }
-        
         if (Get-Command n8n -ErrorAction SilentlyContinue) {
             $n8nVersion = (n8n --version 2>$null)
             Write-Success "n8n $($n8nVersion) installed successfully."

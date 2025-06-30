@@ -202,10 +202,10 @@ install_n8n() {
     print_step "4/6" "Installing n8n..."
     
     if command -v n8n &>/dev/null; then
-        current_version=$(n8n --version)
-        latest_version=$(npm view n8n version)
+        current_version=$(n8n --version 2>/dev/null | sed 's/^v//;s/ //g')
+        latest_version=$(npm view n8n version 2>/dev/null | sed 's/^v//;s/ //g')
         
-        if [ "$current_version" == "$latest_version" ]; then
+        if [ "$current_version" = "$latest_version" ]; then
             print_success "n8n is already up to date (Version $current_version)."
             return
         else
